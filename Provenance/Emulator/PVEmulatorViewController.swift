@@ -538,6 +538,8 @@ class PVEmulatorViewController: PVEmulatorViewControllerRootClass, PVAudioDelega
             moreInfoViewContrller?.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.hideModeInfo))
             let newNav = UINavigationController(rootViewController: moreInfoViewContrller ?? UIViewController())
             self.present(newNav, animated: true) {() -> Void in }
+			self.isShowingMenu = false
+			self.enableContorllerInput(false)
         }))
         actionsheet.addAction(UIAlertAction(title: "Return to Game Library", style: .destructive, handler: {(_ action: UIAlertAction) -> Void in
             self.quit()
@@ -842,12 +844,17 @@ extension PVEmulatorViewController {
     func showSwapDiscsMenu() {
         guard let core = self.core as? (PVEmulatorCore & DiscSwappable) else {
             ELOG("No core?")
+			self.isShowingMenu = false
+			self.enableContorllerInput(false)
             return
         }
 
         let numberOfDiscs = core.numberOfDiscs
         guard numberOfDiscs > 1 else {
             ELOG("Only 1 disc?")
+			core.setPauseEmulation(false)
+			self.isShowingMenu = false
+			self.enableContorllerInput(false)
             return
         }
 
@@ -862,11 +869,8 @@ extension PVEmulatorViewController {
                 })
 
                 core.setPauseEmulation(false)
-
                 self.isShowingMenu = false
-                #if os(tvOS)
-                    self.controllerUserInteractionEnabled = false
-                #endif
+                self.enableContorllerInput(false)
             }))
         }
 
@@ -874,9 +878,7 @@ extension PVEmulatorViewController {
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: {[unowned self] (sheet) in
             core.setPauseEmulation(false)
             self.isShowingMenu = false
-            #if os(tvOS)
-                self.controllerUserInteractionEnabled = false
-            #endif
+			self.enableContorllerInput(false)
         }))
 
         // Present
